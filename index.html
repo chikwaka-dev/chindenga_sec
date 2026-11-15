@@ -1,13 +1,4 @@
-<!DOCTYPE html
-  // Event delegation for cloze buttons
-  wrap.querySelectorAll('[data-action]').forEach(function(btn){
-    btn.addEventListener('click',function(){
-      var act=this.dataset.action,id=this.dataset.czid;
-      if(act==='check')clozeCheck(id);
-      else if(act==='reveal')clozeReveal(id);
-      else if(act==='reset')clozeReset(id);
-    });
-  });>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -4534,12 +4525,13 @@ function specReset(){
 function toggleDark(){
   var b=document.body;b.classList.toggle('dark');
   var d=b.classList.contains('dark');
-  localStorage.setItem('hs_dark',d?'1':'0');
+  try{localStorage.setItem('hs_dark',d?'1':'0');}catch(e){}
   var btn=document.getElementById('dark-btn');
   if(btn)btn.innerHTML=d?'&#9728; Light':'&#9790; Dark';
 }
 (function(){
-  if(localStorage.getItem('hs_dark')==='1'){
+  var dk=null;try{dk=localStorage.getItem('hs_dark');}catch(e){}
+  if(dk==='1'){
     document.body.classList.add('dark');
     var btn=document.getElementById('dark-btn');
     if(btn)btn.innerHTML='&#9728; Light';
@@ -5618,10 +5610,19 @@ function clozeRender(){
       +'<h3>'+cz.title+'</h3>'
       +'<div class="cloze-text">'+cz.text+'</div>'
       +'<div style="font-family:system-ui,sans-serif;font-size:11px;color:var(--mu);margin-top:6px">&#128161; Hint: '+cz.hint+'</div>'
-      +'<div class="ass="cloze-acts">'      +'<button class="fc-act gold" data-action="check" data-czid="'+cz.id+'">&#10003; Check</button>'      +'<button class="fc-act red" data-action="reveal" data-czid="'+cz.id+'">&#128065; Reveal</button>'      +'<button class="fc-act gold" data-action="reset" data-czid="'+cz.id+'">&#8635; Reset</button>'+'</div>'
+      +'<div class="cloze-acts">'      +'<button class="fc-act gold" data-action="check" data-czid="'+cz.id+'">&#10003; Check</button>'      +'<button class="fc-act red" data-action="reveal" data-czid="'+cz.id+'">&#128065; Reveal</button>'      +'<button class="fc-act gold" data-action="reset" data-czid="'+cz.id+'">&#8635; Reset</button>'+'</div>'
       +'<div class="cloze-feedback" id="cz-fb-'+cz.id+'"></div>'
       +'</div>';
   }).join('');
+  // Event delegation for cloze buttons
+  wrap.querySelectorAll('[data-action]').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var act=this.dataset.action,id=this.dataset.czid;
+      if(act==='check')clozeCheck(id);
+      else if(act==='reveal')clozeReveal(id);
+      else if(act==='reset')clozeReset(id);
+    });
+  });
 }
 
 function clozeFilter(topic){

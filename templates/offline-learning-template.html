@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Offline Learning Book</title>
+<!--
+  OFFLINE LEARNING TEMPLATE
+  ------------------------------------------------------------------
+  One self-contained file. No internet, no fonts, no CDNs, no accounts.
+  Share by USB, SD card, Bluetooth, WhatsApp or a school hotspot.
+
+  TO MAKE A NEW BOOK: edit only the COURSE object in the <script> near
+  the bottom (search for "EDIT FROM HERE"). Everything else adapts.
+  See templates/README.md for the full guide.
+-->
+<style>
+:root{
+  --navy:#1B3A6B;--navy2:#0F2447;--gold:#C9A227;--gold2:#F0D060;--red:#8B0000;
+  --ok:#1E7A46;--ok-bg:#E5F4EA;--warn:#9A5B00;--warn-bg:#FFF3DC;--bad:#A12A2A;--bad-bg:#FBE9E9;
+  --bg:#FDF8EF;--card:#FFFFFF;--lt:#EEF3F9;--line:#D8E1EE;--ink:#2C2C2C;--mu:#5F6670;
+  --sb:270px;--rad:10px;
+}
+body.dark{
+  --bg:#12161D;--card:#1B212B;--lt:#222A36;--line:#334055;--ink:#E7EAF0;--mu:#A3ACBA;
+  --navy:#9DB8E8;--ok-bg:#16301F;--warn-bg:#33270F;--bad-bg:#3A1C1C;--ok:#7FD39E;--bad:#F09A9A;--warn:#F2C26B;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:Georgia,"Times New Roman",serif;background:var(--bg);color:var(--ink);
+  font-size:16px;line-height:1.65;min-height:100vh}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+.ui{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+
+/* ---------- Sidebar ---------- */
+#sb{position:fixed;inset:0 auto 0 0;width:var(--sb);display:flex;flex-direction:column;
+  background:linear-gradient(175deg,#0F2447,#1B3A6B);color:#fff;z-index:50;
+  box-shadow:4px 0 24px rgba(0,0,0,.2);transition:transform .25s}
+#sb-hd{padding:20px 18px 14px;border-bottom:1px solid rgba(201,162,39,.35)}
+.sb-school{font:700 10px/1.3 system-ui,sans-serif;letter-spacing:2px;text-transform:uppercase;color:var(--gold)}
+.sb-title{font-size:18px;font-weight:bold;margin-top:4px;line-height:1.25}
+.sb-sub{font:12px system-ui,sans-serif;color:rgba(255,255,255,.6)}
+#sb-learner{margin:12px 14px 4px;padding:9px 12px;border-radius:8px;background:rgba(255,255,255,.08);
+  font:13px system-ui,sans-serif;display:flex;align-items:center;gap:8px;border:0;color:#fff;text-align:left;width:calc(100% - 28px)}
+#sb-learner b{flex:1}
+#nav{flex:1;overflow-y:auto;padding:8px 0}
+.ni{display:flex;align-items:center;gap:10px;width:100%;padding:10px 16px;border:0;background:none;
+  border-left:3px solid transparent;color:rgba(255,255,255,.78);font:13px system-ui,sans-serif;text-align:left}
+.ni:hover{background:rgba(255,255,255,.07);color:#fff}
+.ni.active{background:rgba(201,162,39,.16);border-left-color:var(--gold);color:var(--gold2)}
+.ni-ic{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;
+  align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.ni.active .ni-ic{background:var(--gold);color:#0F2447}
+.ni-t{flex:1}
+.ni-stars{font-size:11px;color:var(--gold2)}
+.nav-h{font:700 10px system-ui,sans-serif;letter-spacing:1.5px;text-transform:uppercase;
+  color:rgba(255,255,255,.4);padding:14px 18px 4px}
+#sb-ft{padding:12px 14px;border-top:1px solid rgba(255,255,255,.1);display:flex;gap:6px;flex-wrap:wrap}
+#sb-ft select,#sb-ft button{flex:1;min-width:0;padding:7px 8px;border-radius:6px;border:1px solid rgba(255,255,255,.2);
+  background:rgba(255,255,255,.08);color:#fff;font:12px system-ui,sans-serif}
+#sb-ft select option{color:#000}
+
+/* ---------- Main ---------- */
+#topbar{display:none}
+main{margin-left:var(--sb);padding:32px clamp(16px,4vw,48px) 80px;max-width:calc(var(--sb) + 900px)}
+h1{font-size:clamp(24px,4vw,32px);color:var(--navy);line-height:1.2;margin-bottom:6px}
+h2{font-size:20px;color:var(--navy);margin:24px 0 10px}
+h3{font-size:17px;color:var(--navy);margin-bottom:6px}
+p{margin-bottom:10px}
+.lead{color:var(--mu);font-size:15px;margin-bottom:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--rad);padding:18px 20px;margin-bottom:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 16px;border-radius:8px;border:1px solid var(--line);
+  background:var(--card);font:600 14px system-ui,sans-serif;min-height:42px}
+.btn:hover{border-color:var(--navy)}
+.btn.primary{background:#1B3A6B;border-color:#1B3A6B;color:#fff}
+.btn.gold{background:var(--gold);border-color:var(--gold);color:#0F2447}
+.btn:disabled{opacity:.45;cursor:default}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.spacer{flex:1}
+.pill{display:inline-block;padding:2px 10px;border-radius:20px;font:600 11px system-ui,sans-serif}
+.pill.draft{background:var(--warn-bg);color:var(--warn)}
+.pill.ok{background:var(--ok-bg);color:var(--ok)}
+.notice{padding:10px 14px;border-radius:8px;font:13px system-ui,sans-serif;margin-bottom:14px}
+.notice.warn{background:var(--warn-bg);color:var(--warn)}
+.notice.info{background:var(--lt);color:var(--ink)}
+.muted{color:var(--mu)}
+.small{font-size:13px}
+
+/* Tabs */
+.tabs{display:flex;gap:4px;border-bottom:2px solid var(--line);margin:18px 0;overflow-x:auto}
+.tab{padding:10px 16px;border:0;background:none;font:600 14px system-ui,sans-serif;color:var(--mu);
+  border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap}
+.tab.active{color:var(--navy);border-bottom-color:var(--gold)}
+
+/* Learn steps */
+.steps-bar{display:flex;gap:6px;margin-bottom:14px}
+.steps-bar span{flex:1;height:6px;border-radius:3px;background:var(--line)}
+.steps-bar span.on{background:var(--gold)}
+.step-body{font-size:16.5px}
+.step-body ul,.step-body ol{margin:0 0 10px 22px}
+.example{background:var(--lt);border-left:4px solid var(--gold);padding:10px 14px;border-radius:6px;margin:10px 0}
+.think{background:var(--ok-bg);border-left:4px solid var(--ok);padding:10px 14px;border-radius:6px;margin:10px 0}
+
+/* Practice */
+.q-num{font:600 12px system-ui,sans-serif;color:var(--mu);margin-bottom:4px}
+.q-text{font-size:17px;margin-bottom:12px}
+.opts{display:grid;gap:8px}
+.opt{text-align:left;padding:12px 14px;border-radius:8px;border:2px solid var(--line);background:var(--card);font-size:15.5px;min-height:46px}
+.opt:hover:not(:disabled){border-color:var(--navy)}
+.opt.right{border-color:var(--ok);background:var(--ok-bg)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-bg);opacity:.75}
+.fill-in{padding:10px 12px;border:2px solid var(--line);border-radius:8px;background:var(--card);width:min(100%,320px);font-size:16px}
+.fb{margin-top:12px;padding:10px 14px;border-radius:8px;font:14px system-ui,sans-serif;display:none}
+.fb.show{display:block}
+.fb.good{background:var(--ok-bg);color:var(--ok)}
+.fb.try{background:var(--warn-bg);color:var(--warn)}
+.hint{margin-top:10px;font:14px system-ui,sans-serif;color:var(--mu);display:none}
+.hint.show{display:block}
+.stars{font-size:20px;letter-spacing:2px;color:var(--gold)}
+.stars .off{color:var(--line)}
+.celebrate{text-align:center;padding:28px 20px}
+.celebrate .big{font-size:44px}
+
+/* Missions */
+.mission h3::before{content:"\1F9ED  "}
+.mission ol{margin:6px 0 10px 22px}
+.mission textarea{width:100%;min-height:90px;padding:10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);resize:vertical}
+.mission.done{border-color:var(--ok)}
+
+/* Journey */
+.topic-card{cursor:pointer;text-align:left;width:100%}
+.topic-card:hover{border-color:var(--navy)}
+.bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin:8px 0 4px}
+.bar i{display:block;height:100%;background:var(--gold)}
+
+/* Glossary */
+#gl-search{width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);margin-bottom:14px}
+.gl-item{padding:10px 0;border-bottom:1px solid var(--line)}
+.gl-item b{color:var(--navy)}
+
+/* Learner picker */
+.learner-list{display:grid;gap:8px;margin:14px 0}
+.learner-btn{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line);
+  border-radius:8px;background:var(--card);text-align:left}
+.avatar{width:38px;height:38px;border-radius:50%;background:var(--gold);color:#0F2447;display:flex;
+  align-items:center;justify-content:center;font:700 16px system-ui,sans-serif;flex-shrink:0}
+input.txt{padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--card);flex:1;min-width:160px}
+textarea.code{width:100%;min-height:140px;padding:10px;border-radius:8px;border:1px solid var(--line);
+  background:var(--card);font:12px ui-monospace,Menlo,Consolas,monospace}
+table{border-collapse:collapse;width:100%;font:13px system-ui,sans-serif}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:var(--lt)}
+.tbl-wrap{overflow-x:auto}
+
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%) translateY(120px);background:#0F2447;color:#fff;
+  padding:10px 18px;border-radius:24px;font:14px system-ui,sans-serif;transition:transform .3s,opacity .3s;z-index:99;max-width:90vw;opacity:0;visibility:hidden}
+#toast.show{transform:translateX(-50%) translateY(0);opacity:1;visibility:visible}
+
+/* Print area (hidden on screen) */
+#print-area{display:none}
+
+/* ---------- Phones ---------- */
+@media (max-width:768px){
+  #sb{transform:translateX(-100%)}
+  body.nav-open #sb{transform:none}
+  body.nav-open #scrim{display:block}
+  #scrim{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:40}
+  #topbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:30;padding:10px 16px;
+    background:#0F2447;color:#fff;font:600 15px system-ui,sans-serif}
+  #topbar button{background:none;border:0;color:#fff;font-size:22px;line-height:1;padding:4px 6px}
+  main{margin-left:0;padding:20px 16px 80px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ---------- Print ---------- */
+@media print{
+  #sb,#topbar,#scrim,#toast,main{display:none!important}
+  #print-area{display:block!important;color:#000;font-size:12pt}
+  @page{margin:16mm}
+  #print-area ul,#print-area ol{margin:4pt 0 6pt 22pt}
+  #print-area p{margin-bottom:6pt}
+  #print-area h3{color:#000;margin-top:6pt}
+  body{background:#fff}
+  #print-area h1{color:#000;font-size:20pt}
+  #print-area h2{color:#000;page-break-after:avoid;border-bottom:1px solid #999;padding-bottom:3px}
+  .p-step{page-break-inside:avoid;margin-bottom:10pt}
+  .p-q{page-break-inside:avoid;margin:8pt 0}
+  .p-line{border-bottom:1px solid #999;height:20pt}
+  .p-ans{page-break-before:always}
+}
+</style>
+</head>
+<body>
+
+<div id="topbar"><button id="menu-btn" aria-label="Menu">&#9776;</button><span id="tb-title"></span></div>
+<div id="scrim"></div>
+
+<nav id="sb" aria-label="Book navigation">
+  <div id="sb-hd">
+    <div class="sb-school" id="sb-school"></div>
+    <div class="sb-title" id="sb-title"></div>
+    <div class="sb-sub" id="sb-sub"></div>
+  </div>
+  <button id="sb-learner" data-go="learners"><span class="avatar" id="sb-av" style="width:28px;height:28px;font-size:12px"></span><b id="sb-name"></b><span>&#8644;</span></button>
+  <div id="nav"></div>
+  <div id="sb-ft">
+    <select id="lang-sel" aria-label="Language"></select>
+    <button id="dark-btn" aria-label="Dark mode">&#9790;</button>
+  </div>
+</nav>
+
+<main id="main" tabindex="-1"></main>
+<div id="print-area"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* =====================================================================
+   EDIT FROM HERE — your book's content.
+   Any text can be a plain string, or {en:'...', sn:'...', nd:'...'}.
+   Missing translations fall back to English automatically.
+   ===================================================================== */
+var COURSE = {
+  id: 'heritage-f4-sample',          // unique per book: progress is saved under this name
+  version: 1,
+  school: 'Your School Name',
+  author: 'Munyaradzi Muchenje',
+  title: { en: 'Heritage Studies', sn: 'Heritage Studies', nd: 'Heritage Studies' },
+  subtitle: { en: 'Form 4 · Sample book', sn: 'Fomu 4 · Bhuku remuenzaniso', nd: 'Ifomu 4 · Ibhuku lesibonelo' },
+  languages: [
+    { code: 'en', name: 'English' },
+    { code: 'sn', name: 'chiShona' },
+    { code: 'nd', name: 'isiNdebele' }
+  ],
+
+  topics: [
+    {
+      id: 't1',
+      icon: '1',
+      reviewed: false,   // set to true once a teacher has checked this topic
+      title: { en: 'Socialisation', sn: 'Kudzidziswa kugara nevamwe' },
+      intro: { en: 'How we learn the ways of our family, community and nation.' },
+
+      steps: [
+        {
+          title: { en: 'What is socialisation?', sn: 'Chii chinonzi socialisation?' },
+          body: { en: '<p><b>Socialisation</b> is the lifelong process of learning the values, beliefs, language and behaviour of the society we live in.</p><div class="example">Example: a child learns to greet elders by clapping hands and saying <i>"Mangwanani"</i> or <i>"Livukile"</i>.</div>' }
+        },
+        {
+          title: { en: 'Agents of socialisation' },
+          body: { en: '<p>The people and institutions that teach us are called <b>agents of socialisation</b>:</p><ul><li>The family</li><li>The school</li><li>Peers (friends of the same age)</li><li>Religious institutions</li><li>The media and ICTs</li></ul>' }
+        },
+        {
+          title: { en: 'Primary and secondary socialisation' },
+          body: { en: '<p><b>Primary socialisation</b> happens in early childhood, mostly in the family.</p><p><b>Secondary socialisation</b> happens later, through school, peers, work and the wider community.</p><div class="think">Think: which agent taught you the most about your totem?</div>' }
+        }
+      ],
+
+      practice: [
+        { type: 'mcq',
+          q: { en: 'Which is an agent of PRIMARY socialisation?' },
+          options: [{ en: 'The family' }, { en: 'A workplace' }, { en: 'Parliament' }, { en: 'A newspaper' }],
+          answer: 0,
+          hint: { en: 'Primary socialisation happens in early childhood.' },
+          explain: { en: 'The family is the first place a child learns values and language.' } },
+        { type: 'tf',
+          q: { en: 'Socialisation stops when you finish school.' },
+          answer: false,
+          hint: { en: 'Think about adults starting a new job.' },
+          explain: { en: 'Socialisation is lifelong: we keep learning new roles as adults.' } },
+        { type: 'fill',
+          q: { en: 'Friends of the same age group are called ______.' },
+          answer: ['peers', 'peer group', 'peer'],
+          hint: { en: 'It starts with "p".' },
+          explain: { en: 'Peers strongly influence teenagers’ dress, language and behaviour.' } }
+      ],
+
+      missions: [
+        { title: { en: 'Ask an elder' },
+          task: { en: 'Interview a grandparent or elder about how children were taught good manners when they were young.' },
+          steps: [{ en: 'Ask: Who taught you how to behave?' }, { en: 'Ask: What happened if a child was rude?' }, { en: 'Write two ways it is the same today and one way it is different.' }] }
+      ]
+    },
+
+    {
+      id: 't2',
+      icon: '2',
+      reviewed: false,
+      title: { en: 'Identity' },
+      intro: { en: 'Who we are: names, totems, language and belonging.' },
+      steps: [
+        { title: { en: 'What is identity?' },
+          body: { en: '<p><b>Identity</b> is what makes a person or group who they are: their name, language, totem, beliefs and history.</p>' } },
+        { title: { en: 'Totems' },
+          body: { en: '<p>A <b>totem</b> (mutupo / isibongo) links a family to an animal or symbol. It shows clan membership and guides who may marry whom.</p>' } }
+      ],
+      practice: [
+        { type: 'mcq',
+          q: { en: 'What does a totem mainly show?' },
+          options: [{ en: 'Clan membership' }, { en: 'School grade' }, { en: 'Favourite food' }],
+          answer: 0,
+          hint: { en: 'It connects you to a family group.' },
+          explain: { en: 'Totems identify clan membership.' } }
+      ],
+      missions: [
+        { title: { en: 'My family tree' },
+          task: { en: 'Draw your family tree back to your grandparents. Write each person’s totem if you know it.' },
+          steps: [] }
+      ]
+    }
+  ],
+
+  glossary: [
+    { term: { en: 'Socialisation' }, meaning: { en: 'Learning the values and behaviour of your society.' } },
+    { term: { en: 'Peers' }, meaning: { en: 'People of the same age group.' } },
+    { term: { en: 'Totem' }, meaning: { en: 'A symbol, often an animal, that identifies a clan.' } }
+  ]
+};
+/* =====================================================================
+   STOP EDITING HERE. The engine below works for any COURSE.
+   ===================================================================== */
+
+/* ---------- Interface words (translate here) ---------- */
+var UI = {
+  en: { home:'My journey', learners:"Who's learning?", glossary:'Glossary', share:'Send my progress', teacher:'Teacher corner',
+    about:'About this book', topics:'Topics', tools:'Tools', learn:'Learn', practice:'Practice', missions:'Missions',
+    next:'Next', back:'Back', done:'Done', check:'Check', hint:'Show a hint', tryAgain:'Not yet. Try again!',
+    great:['Great work!','Well done!','Excellent!','You got it!','Brilliant!'], showAnswer:'Show me the answer',
+    answerWas:'The answer is:', true_:'True', false_:'False', typeAnswer:'Type your answer',
+    practiceDone:'You finished this practice!', practiceAgain:'Practise again', keepGoing:'Every try makes your brain stronger.',
+    starsEarned:'stars collected', lessons:'lessons', start:'Start', continue_:'Continue', addLearner:'Add a learner',
+    yourName:'Your name', add:'Add', switchTo:'Choose your name to continue', remove:'Remove',
+    markDone:'Mark mission done', missionDone:'Mission done!', notes:'My notes', print:'Print this topic',
+    draft:'Draft: awaiting teacher review', reviewed:'Checked by a teacher', noSave:'This browser is not saving progress. Your work will be lost when you close it.',
+    search:'Search words...', welcome:'Welcome', pickTopic:'Choose a topic to start learning.',
+    shareIntro:'Send this message to your teacher when you have network (WhatsApp, SMS or email). It works offline: copy now, send later.',
+    copy:'Copy', copied:'Copied!', download:'Save as file', shareBtn:'Share',
+    teacherIntro:'Paste progress messages from learners below (one or many). Everything stays on this device.',
+    readCodes:'Read messages', learner:'Learner', date:'Date', topic:'Topic', noCodes:'No progress codes found in the text.',
+    confirmRemove:'Remove this learner and all their progress?', guest:'Guest', missionsDone:'missions' },
+  sn: { home:'Rwendo rwangu', learners:'Ndiani ari kudzidza?', glossary:'Duramazwi', share:'Tumira fambiro yangu',
+    teacher:'Kona yemudzidzisi', about:'Nezve bhuku iri', topics:'Misoro', tools:'Zvishandiso', learn:'Dzidza',
+    practice:'Dzidzira', missions:'Mabasa', next:'Mberi', back:'Shure', check:'Tarisa', hint:'Ndipe pfungwa',
+    tryAgain:'Kwete parizvino. Edza zvakare!', great:['Wakwanisa!','Waita zvakanaka!','Zvakanaka chaizvo!'],
+    showAnswer:'Ndiratidze mhinduro', answerWas:'Mhinduro ndeiyi:', true_:'Ichokwadi', false_:'Manyepo',
+    start:'Tanga', continue_:'Enderera', addLearner:'Wedzera mudzidzi', yourName:'Zita rako', add:'Wedzera',
+    welcome:'Mauya', pickTopic:'Sarudza musoro kuti utange kudzidza.', copy:'Kopa', done:'Zvapera' },
+  nd: { home:'Uhambo bami', learners:'Ngubani ofundayo?', glossary:'Isichazamazwi', learn:'Funda', practice:'Zilolonga',
+    missions:'Imisebenzi', next:'Phambili', back:'Emuva', check:'Hlola', tryAgain:'Hatshi okwamanje. Zama futhi!',
+    great:['Wenze kuhle!','Kuhle kakhulu!'], true_:'Kuyiqiniso', false_:'Akusilo iqiniso', start:'Qala',
+    welcome:'Siyakwamukela', yourName:'Ibizo lakho', add:'Engeza', done:'Kuphelile' }
+};
+
+/* ---------- Safe storage: never crashes, falls back to memory ---------- */
+var Store = (function(){
+  var mem = {}, ok = false;
+  try { var k='__t'; window.localStorage.setItem(k,k); window.localStorage.removeItem(k); ok = true; } catch(e){}
+  return {
+    ok: ok,
+    get: function(key, dflt){
+      var raw = null;
+      try { raw = ok ? window.localStorage.getItem(key) : (key in mem ? mem[key] : null); } catch(e){}
+      if (raw == null) return dflt;
+      try { return JSON.parse(raw); } catch(e){ return dflt; }
+    },
+    set: function(key, val){
+      var raw = JSON.stringify(val);
+      try { if (ok) window.localStorage.setItem(key, raw); else mem[key] = raw; }
+      catch(e){ mem[key] = raw; }
+    }
+  };
+})();
+
+/* ---------- State ---------- */
+var KEY = 'olb:' + COURSE.id;
+var S = Store.get(KEY, null) || { learners:{}, current:null, lang:'en', dark:false };
+function save(){ Store.set(KEY, S); }
+function me(){ return S.current && S.learners[S.current]; }
+function prog(tid){
+  var L = me(); if (!L) return { step:0, stepsMax:0, stars:{}, missions:{} };
+  L.progress = L.progress || {};
+  return L.progress[tid] || (L.progress[tid] = { step:0, stepsMax:0, stars:{}, missions:{} });
+}
+
+/* ---------- Helpers ---------- */
+function t(x){ if (x == null) return ''; if (typeof x !== 'object' || Array.isArray(x)) return x; return x[S.lang] || x.en || ''; }
+function u(k){ var d = UI[S.lang] || {}; return d[k] != null ? d[k] : UI.en[k]; }
+function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function $(id){ return document.getElementById(id); }
+function topicById(id){ for (var i=0;i<COURSE.topics.length;i++) if (COURSE.topics[i].id===id) return COURSE.topics[i]; return null; }
+function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+function norm(s){ return String(s).toLowerCase().replace(/[^a-z0-9À-ɏ]+/g,' ').trim(); }
+function starsHtml(n, max){ var h=''; for (var i=0;i<max;i++) h += i<n ? '★' : '<span class="off">★</span>'; return '<span class="stars">'+h+'</span>'; }
+function toast(msg){ var el=$('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(function(){ el.classList.remove('show'); },2200); }
+function today(){ var d=new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+
+function topicStats(tp){
+  var p = prog(tp.id), stars = 0;
+  Object.keys(p.stars).forEach(function(k){ stars += p.stars[k]; });
+  var md = 0; Object.keys(p.missions).forEach(function(k){ if (p.missions[k].done) md++; });
+  return { steps: Math.min(p.stepsMax, tp.steps.length), stepsTotal: tp.steps.length,
+    stars: stars, starsTotal: tp.practice.length*3, missions: md, missionsTotal: (tp.missions||[]).length };
+}
+
+/* ---------- Router ---------- */
+var view = { name:'home', topic:null, tab:'learn' };
+function go(name, topic, tab){
+  view = { name:name, topic:topic||null, tab:tab||'learn' };
+  if (!me() && name !== 'learners' && name !== 'about' && name !== 'teacher') view.name = 'learners';
+  document.body.classList.remove('nav-open');
+  render();
+  window.scrollTo(0,0);
+}
+
+function render(){
+  document.documentElement.lang = S.lang;
+  document.body.classList.toggle('dark', !!S.dark);
+  document.title = t(COURSE.title) + ' — ' + t(COURSE.subtitle);
+  $('sb-school').textContent = COURSE.school;
+  $('sb-title').textContent = t(COURSE.title);
+  $('sb-sub').textContent = t(COURSE.subtitle);
+  $('tb-title').textContent = t(COURSE.title);
+  var L = me();
+  $('sb-name').textContent = L ? L.name : u('learners');
+  $('sb-av').textContent = L ? L.name.charAt(0).toUpperCase() : '?';
+  renderNav();
+  var fn = { home:vHome, learners:vLearners, topic:vTopic, glossary:vGlossary, share:vShare, teacher:vTeacher, about:vAbout }[view.name] || vHome;
+  var m = $('main');
+  m.innerHTML = (Store.ok ? '' : '<div class="notice warn">'+u('noSave')+'</div>') + fn();
+  if (fn.after) fn.after();
+}
+
+function renderNav(){
+  var h = '<div class="nav-h">'+u('topics')+'</div>';
+  h += navItem('home', null, '⌂', u('home'));
+  COURSE.topics.forEach(function(tp){
+    var s = topicStats(tp);
+    h += '<button class="ni'+(view.name==='topic'&&view.topic===tp.id?' active':'')+'" data-go="topic" data-topic="'+tp.id+'">'
+      + '<span class="ni-ic">'+esc(tp.icon||'•')+'</span><span class="ni-t">'+esc(t(tp.title))+'</span>'
+      + (s.stars ? '<span class="ni-stars">★'+s.stars+'</span>' : '') + '</button>';
+  });
+  h += '<div class="nav-h">'+u('tools')+'</div>';
+  h += navItem('glossary', null, 'Aa', u('glossary'));
+  h += navItem('share', null, '✉', u('share'));
+  h += navItem('teacher', null, '⚑', u('teacher'));
+  h += navItem('about', null, 'i', u('about'));
+  $('nav').innerHTML = h;
+}
+function navItem(name, topic, ic, label){
+  return '<button class="ni'+(view.name===name?' active':'')+'" data-go="'+name+'"><span class="ni-ic">'+ic+'</span><span class="ni-t">'+esc(label)+'</span></button>';
+}
+
+/* ---------- Views ---------- */
+function vLearners(){
+  var ids = Object.keys(S.learners);
+  var h = '<h1>'+u('learners')+'</h1><p class="lead">'+(ids.length ? u('switchTo') : u('yourName'))+'</p><div class="learner-list">';
+  ids.forEach(function(id){
+    var L = S.learners[id];
+    h += '<div class="row"><button class="learner-btn" style="flex:1" data-act="pick" data-id="'+id+'"><span class="avatar">'+esc(L.name.charAt(0).toUpperCase())+'</span><b>'+esc(L.name)+'</b></button>'
+      + '<button class="btn" data-act="rmlearner" data-id="'+id+'" aria-label="'+u('remove')+'">✕</button></div>';
+  });
+  h += '</div><div class="card"><h3>'+u('addLearner')+'</h3><div class="row"><input class="txt" id="new-name" maxlength="30" placeholder="'+u('yourName')+'"><button class="btn primary" data-act="addlearner">'+u('add')+'</button></div></div>';
+  return h;
+}
+vLearners.after = function(){ var i=$('new-name'); if (i) i.addEventListener('keydown', function(e){ if (e.key==='Enter') act('addlearner'); }); };
+
+function vHome(){
+  var L = me(), tot = 0, totMax = 0;
+  var h = '<h1>'+u('welcome')+', '+esc(L.name)+'</h1><p class="lead">'+u('pickTopic')+'</p><div class="grid">';
+  COURSE.topics.forEach(function(tp){
+    var s = topicStats(tp); tot += s.stars; totMax += s.starsTotal;
+    var pct = s.stepsTotal ? Math.round(100*s.steps/s.stepsTotal) : 0;
+    h += '<button class="card topic-card" data-go="topic" data-topic="'+tp.id+'">'
+      + '<div class="row"><h3 style="margin:0">'+esc(tp.icon)+'. '+esc(t(tp.title))+'</h3></div>'
+      + '<p class="small muted" style="margin:4px 0 0">'+esc(t(tp.intro))+'</p>'
+      + '<div class="bar"><i style="width:'+pct+'%"></i></div>'
+      + '<div class="row small ui muted"><span>'+s.steps+'/'+s.stepsTotal+' '+u('lessons')+'</span><span class="spacer"></span>'
+      + '<span>★ '+s.stars+'</span><span>🧭 '+s.missions+'/'+s.missionsTotal+'</span></div></button>';
+  });
+  h += '</div><div class="card ui" style="text-align:center"><div class="stars" style="font-size:28px">★ '+tot+'</div><div class="muted small">'+u('starsEarned')+'. '+u('keepGoing')+'</div></div>';
+  return h;
+}
+
+function vTopic(){
+  var tp = topicById(view.topic); if (!tp) return vHome();
+  var h = '<div class="row"><h1 style="flex:1">'+esc(t(tp.title))+'</h1>'
+    + '<span class="pill '+(tp.reviewed?'ok':'draft')+'">'+(tp.reviewed?u('reviewed'):u('draft'))+'</span></div>'
+    + '<p class="lead">'+esc(t(tp.intro))+'</p>'
+    + '<div class="tabs" role="tablist">'
+    + tabBtn('learn', '📖 '+u('learn')) + tabBtn('practice', '⭐ '+u('practice'))
+    + ((tp.missions||[]).length ? tabBtn('missions', '🧭 '+u('missions')) : '')
+    + '</div><div id="tab-body"></div>'
+    + '<div class="row" style="margin-top:20px"><button class="btn" data-act="print">🖨 '+u('print')+'</button></div>';
+  return h;
+}
+vTopic.after = function(){ var tp=topicById(view.topic); if (!tp) return;
+  if (view.tab==='learn') renderLearn(tp); else if (view.tab==='practice') renderPractice(tp); else renderMissions(tp); };
+function tabBtn(id, label){ return '<button class="tab'+(view.tab===id?' active':'')+'" role="tab" data-tab="'+id+'">'+label+'</button>'; }
+
+/* Learn: one step at a time */
+function renderLearn(tp){
+  var p = prog(tp.id), n = tp.steps.length;
+  if (!n){ $('tab-body').innerHTML = ''; return; }
+  if (p.step >= n) p.step = n-1;
+  var st = tp.steps[p.step];
+  p.stepsMax = Math.max(p.stepsMax, p.step+1); save();
+  var bar = ''; for (var i=0;i<n;i++) bar += '<span class="'+(i<=p.step?'on':'')+'"></span>';
+  var last = p.step === n-1;
+  $('tab-body').innerHTML = '<div class="steps-bar">'+bar+'</div><div class="card"><div class="q-num ui">'+(p.step+1)+' / '+n+'</div>'
+    + '<h2 style="margin-top:0">'+esc(t(st.title))+'</h2><div class="step-body">'+t(st.body)+'</div></div>'
+    + '<div class="row"><button class="btn" data-act="step" data-d="-1"'+(p.step===0?' disabled':'')+'>← '+u('back')+'</button><span class="spacer"></span>'
+    + (last ? '<button class="btn gold" data-tab="practice">⭐ '+u('practice')+' →</button>'
+            : '<button class="btn primary" data-act="step" data-d="1">'+u('next')+' →</button>') + '</div>';
+  renderNav();
+}
+
+/* Practice: stars, hints, no failing */
+var P = null; // current practice session
+function renderPractice(tp){
+  if (!P || P.tid !== tp.id) P = { tid: tp.id, i: 0, tries: 0, solved: false, earned: 0 };
+  var body = $('tab-body');
+  if (P.i >= tp.practice.length){
+    body.innerHTML = '<div class="card celebrate"><div class="big">🎉</div><h2>'+u('practiceDone')+'</h2>'
+      + '<p>'+starsHtml(P.earned, tp.practice.length*3)+'</p><p class="muted ui small">'+u('keepGoing')+'</p>'
+      + '<div class="row" style="justify-content:center"><button class="btn" data-act="restart">↻ '+u('practiceAgain')+'</button>'
+      + (tp.missions&&tp.missions.length ? '<button class="btn gold" data-tab="missions">🧭 '+u('missions')+'</button>' : '') + '</div></div>';
+    return;
+  }
+  var q = tp.practice[P.i], qid = 'q'+P.i, best = prog(tp.id).stars[qid]||0;
+  var h = '<div class="card"><div class="row q-num ui"><span>'+(P.i+1)+' / '+tp.practice.length+'</span><span class="spacer"></span>'+starsHtml(best,3)+'</div>'
+    + '<div class="q-text">'+t(q.q)+'</div>';
+  if (q.type === 'mcq'){
+    h += '<div class="opts">' + q.options.map(function(o,i){ return '<button class="opt" data-act="ans" data-v="'+i+'">'+esc(t(o))+'</button>'; }).join('') + '</div>';
+  } else if (q.type === 'tf'){
+    h += '<div class="opts"><button class="opt" data-act="ans" data-v="true">'+u('true_')+'</button><button class="opt" data-act="ans" data-v="false">'+u('false_')+'</button></div>';
+  } else {
+    h += '<div class="row"><input class="fill-in" id="fill" autocomplete="off" placeholder="'+u('typeAnswer')+'"><button class="btn primary" data-act="ans">'+u('check')+'</button></div>';
+  }
+  h += '<div class="fb" id="fb"></div><div class="hint" id="hint">💡 '+esc(t(q.hint))+'</div>'
+    + '<div class="row" style="margin-top:12px">'
+    + (q.hint ? '<button class="btn" data-act="hint">💡 '+u('hint')+'</button>' : '')
+    + '<span class="spacer"></span><button class="btn primary" id="next-q" data-act="nextq" style="display:none">'+u('next')+' →</button></div></div>';
+  body.innerHTML = h;
+  var f = $('fill'); if (f){ f.focus(); f.addEventListener('keydown', function(e){ if (e.key==='Enter') act('ans'); }); }
+}
+
+function answer(btn){
+  var tp = topicById(P.tid), q = tp.practice[P.i]; if (P.solved) return;
+  var correct;
+  if (q.type === 'mcq') correct = Number(btn.dataset.v) === q.answer;
+  else if (q.type === 'tf') correct = (btn.dataset.v === 'true') === q.answer;
+  else {
+    var v = norm($('fill').value); if (!v) return;
+    var answers = Array.isArray(q.answer) ? q.answer : [q.answer];
+    correct = answers.some(function(a){ return norm(t(a)) === v; });
+  }
+  P.tries++;
+  var fb = $('fb');
+  if (correct){
+    P.solved = true;
+    var stars = Math.max(1, 4 - P.tries);
+    P.earned += stars;
+    var p = prog(P.tid), qid = 'q'+P.i;
+    p.stars[qid] = Math.max(p.stars[qid]||0, stars); save();
+    if (btn && btn.classList.contains('opt')) btn.classList.add('right');
+    if ($('fill')) $('fill').style.borderColor = 'var(--ok)';
+    fb.className = 'fb show good';
+    fb.innerHTML = '<b>'+pick(u('great'))+'</b> '+starsHtml(stars,3)+(q.explain ? '<br>'+esc(t(q.explain)) : '');
+    document.querySelectorAll('.opt').forEach(function(o){ o.disabled = true; });
+    $('next-q').style.display = '';
+    renderNav();
+  } else {
+    if (btn && btn.classList.contains('opt')){ btn.classList.add('wrong'); btn.disabled = true; }
+    fb.className = 'fb show try';
+    fb.innerHTML = u('tryAgain');
+    if (P.tries >= 1 && q.hint) $('hint').classList.add('show');
+    if (P.tries >= 3){
+      fb.innerHTML += ' <button class="btn" style="margin-left:6px;min-height:32px;padding:4px 10px" data-act="reveal">'+u('showAnswer')+'</button>';
+    }
+  }
+}
+function reveal(){
+  var tp = topicById(P.tid), q = tp.practice[P.i]; P.solved = true;
+  var a = q.type==='mcq' ? t(q.options[q.answer]) : q.type==='tf' ? (q.answer?u('true_'):u('false_')) : t((Array.isArray(q.answer)?q.answer:[q.answer])[0]);
+  $('fb').className = 'fb show good';
+  $('fb').innerHTML = u('answerWas')+' <b>'+esc(a)+'</b>'+(q.explain ? '<br>'+esc(t(q.explain)) : '')+'<br><span class="small">'+u('keepGoing')+'</span>';
+  document.querySelectorAll('.opt').forEach(function(o){ o.disabled = true; });
+  $('next-q').style.display = '';
+}
+
+/* Missions: real-life, offline tasks */
+function renderMissions(tp){
+  var p = prog(tp.id);
+  $('tab-body').innerHTML = (tp.missions||[]).map(function(m,i){
+    var ms = p.missions['m'+i] || {};
+    return '<div class="card mission'+(ms.done?' done':'')+'"><h3>'+esc(t(m.title))+'</h3><p>'+esc(t(m.task))+'</p>'
+      + (m.steps&&m.steps.length ? '<ol>'+m.steps.map(function(s){ return '<li>'+esc(t(s))+'</li>'; }).join('')+'</ol>' : '')
+      + '<label class="ui small muted" for="mn'+i+'">'+u('notes')+'</label><textarea id="mn'+i+'" data-mission="'+i+'">'+esc(ms.note||'')+'</textarea>'
+      + '<div class="row" style="margin-top:8px">'+(ms.done ? '<span class="pill ok">✓ '+u('missionDone')+'</span>'
+          : '<button class="btn gold" data-act="mdone" data-i="'+i+'">✓ '+u('markDone')+'</button>')+'</div></div>';
+  }).join('');
+  document.querySelectorAll('textarea[data-mission]').forEach(function(ta){
+    ta.addEventListener('input', function(){
+      var k = 'm'+ta.dataset.mission, pp = prog(view.topic);
+      pp.missions[k] = pp.missions[k] || {}; pp.missions[k].note = ta.value; save();
+    });
+  });
+}
+
+function vGlossary(){
+  return '<h1>'+u('glossary')+'</h1><input id="gl-search" placeholder="'+u('search')+'"><div id="gl-list"></div>';
+}
+vGlossary.after = function(){
+  var draw = function(){
+    var qv = norm($('gl-search').value);
+    var items = COURSE.glossary.slice().sort(function(a,b){ return t(a.term).localeCompare(t(b.term)); })
+      .filter(function(g){ return !qv || norm(t(g.term)+' '+t(g.meaning)).indexOf(qv) >= 0; });
+    $('gl-list').innerHTML = items.map(function(g){ return '<div class="gl-item"><b>'+esc(t(g.term))+'</b>: '+esc(t(g.meaning))+'</div>'; }).join('');
+  };
+  $('gl-search').addEventListener('input', draw); draw();
+};
+
+/* Progress message for the teacher (works offline; send later) */
+function progressMessage(){
+  var L = me(), lines = [t(COURSE.title)+' — '+t(COURSE.subtitle), 'Learner: '+L.name, 'Date: '+today(), ''];
+  var data = { c: COURSE.id, n: L.name, d: today(), t: {} };
+  COURSE.topics.forEach(function(tp){
+    var s = topicStats(tp);
+    lines.push(t(tp.title)+': '+s.steps+'/'+s.stepsTotal+' lessons, ★'+s.stars+'/'+s.starsTotal+', missions '+s.missions+'/'+s.missionsTotal);
+    data.t[tp.id] = [s.steps, s.stars, s.missions];
+  });
+  var code = 'OLB1:' + btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+  return lines.join('\n') + '\n\n' + code;
+}
+function vShare(){
+  return '<h1>'+u('share')+'</h1><p class="lead">'+u('shareIntro')+'</p>'
+    + '<textarea class="code" id="share-txt" readonly>'+esc(progressMessage())+'</textarea>'
+    + '<div class="row" style="margin-top:10px">'
+    + (navigator.share ? '<button class="btn primary" data-act="nshare">✉ '+u('shareBtn')+'</button>' : '')
+    + '<button class="btn" data-act="copy">📋 '+u('copy')+'</button>'
+    + '<button class="btn" data-act="dl">⬇ '+u('download')+'</button></div>';
+}
+
+function vTeacher(){
+  return '<h1>'+u('teacher')+'</h1><p class="lead">'+u('teacherIntro')+'</p>'
+    + '<textarea class="code" id="codes" placeholder="OLB1:..."></textarea>'
+    + '<div class="row" style="margin:10px 0"><button class="btn primary" data-act="readcodes">'+u('readCodes')+'</button></div><div id="codes-out" class="tbl-wrap"></div>';
+}
+function readCodes(){
+  var txt = $('codes').value, re = /OLB1:([A-Za-z0-9+\/=]+)/g, m, rows = [];
+  while ((m = re.exec(txt))){
+    try { var d = JSON.parse(decodeURIComponent(escape(atob(m[1])))); if (d.c === COURSE.id) rows.push(d); } catch(e){}
+  }
+  if (!rows.length){ $('codes-out').innerHTML = '<p class="muted">'+u('noCodes')+'</p>'; return; }
+  var h = '<table><tr><th>'+u('learner')+'</th><th>'+u('date')+'</th>';
+  COURSE.topics.forEach(function(tp){ h += '<th>'+esc(t(tp.title))+'</th>'; });
+  h += '</tr>';
+  rows.forEach(function(r){
+    h += '<tr><td>'+esc(r.n)+'</td><td>'+esc(r.d)+'</td>';
+    COURSE.topics.forEach(function(tp){
+      var v = r.t[tp.id] || [0,0,0];
+      h += '<td>'+v[0]+'/'+tp.steps.length+' '+u('lessons')+'<br>★'+v[1]+'/'+tp.practice.length*3+'<br>'+v[2]+'/'+(tp.missions||[]).length+' '+u('missionsDone')+'</td>';
+    });
+    h += '</tr>';
+  });
+  $('codes-out').innerHTML = h + '</table>';
+}
+
+function vAbout(){
+  var drafts = COURSE.topics.filter(function(tp){ return !tp.reviewed; }).length;
+  return '<h1>'+u('about')+'</h1><div class="card"><p><b>'+esc(t(COURSE.title))+'</b>, '+esc(t(COURSE.subtitle))+'</p>'
+    + '<p>'+esc(COURSE.author)+' · '+esc(COURSE.school)+'</p>'
+    + '<p class="small muted">Works fully offline. Progress is saved only on this device, separately for each learner.</p>'
+    + (drafts ? '<div class="notice warn">'+drafts+' of '+COURSE.topics.length+' topics are still drafts awaiting teacher review.</div>' : '<div class="notice info">All topics have been reviewed by a teacher.</div>')
+    + '</div>';
+}
+
+/* Print a topic: lessons + practice with answer lines + answer key */
+function printTopic(){
+  var tp = topicById(view.topic); if (!tp) return;
+  var h = '<h1>'+esc(t(COURSE.title))+': '+esc(t(tp.title))+'</h1><p>'+esc(t(tp.intro))+'</p><p>Name: ____________________ &nbsp; Date: __________</p>';
+  h += '<h2>'+u('learn')+'</h2>' + tp.steps.map(function(s,i){ return '<div class="p-step"><h3>'+(i+1)+'. '+esc(t(s.title))+'</h3>'+t(s.body)+'</div>'; }).join('');
+  h += '<h2>'+u('practice')+'</h2>' + tp.practice.map(function(q,i){
+    var body = q.type==='mcq' ? '<ol type="A">'+q.options.map(function(o){ return '<li>'+esc(t(o))+'</li>'; }).join('')+'</ol>'
+      : q.type==='tf' ? '<p>'+u('true_')+' / '+u('false_')+'</p>' : '<div class="p-line"></div>';
+    return '<div class="p-q"><b>'+(i+1)+'.</b> '+t(q.q)+body+'</div>';
+  }).join('');
+  if ((tp.missions||[]).length) h += '<h2>'+u('missions')+'</h2>' + tp.missions.map(function(m){
+    return '<div class="p-q"><b>'+esc(t(m.title))+'</b><p>'+esc(t(m.task))+'</p>'+(m.steps&&m.steps.length?'<ol>'+m.steps.map(function(s){ return '<li>'+esc(t(s))+'</li>'; }).join('')+'</ol>':'')+'<div class="p-line"></div><div class="p-line"></div><div class="p-line"></div></div>';
+  }).join('');
+  h += '<div class="p-ans"><h2>Answers</h2><ol>' + tp.practice.map(function(q){
+    var a = q.type==='mcq' ? String.fromCharCode(65+q.answer)+'. '+t(q.options[q.answer]) : q.type==='tf' ? (q.answer?u('true_'):u('false_')) : t((Array.isArray(q.answer)?q.answer:[q.answer])[0]);
+    return '<li>'+esc(a)+'</li>';
+  }).join('') + '</ol></div>';
+  $('print-area').innerHTML = h;
+  window.print();
+}
+
+/* ---------- Actions ---------- */
+function act(name, el){
+  var L = me();
+  switch (name){
+    case 'addlearner':
+      var nm = ($('new-name').value||'').trim().slice(0,30); if (!nm) return;
+      var id = 'l' + Date.now().toString(36);
+      S.learners[id] = { name:nm, progress:{} }; S.current = id; save(); go('home'); break;
+    case 'pick': S.current = el.dataset.id; save(); P = null; go('home'); break;
+    case 'rmlearner':
+      if (!confirm(u('confirmRemove'))) return;
+      delete S.learners[el.dataset.id]; if (S.current === el.dataset.id) S.current = null; save(); go('learners'); break;
+    case 'step': var p = prog(view.topic); p.step = Math.max(0, p.step + Number(el.dataset.d)); save(); renderLearn(topicById(view.topic)); window.scrollTo(0,0); break;
+    case 'ans': answer(el && el.classList.contains('opt') ? el : null); break;
+    case 'hint': $('hint').classList.add('show'); break;
+    case 'reveal': reveal(); break;
+    case 'nextq': P.i++; P.tries = 0; P.solved = false; renderPractice(topicById(view.topic)); break;
+    case 'restart': P = null; renderPractice(topicById(view.topic)); break;
+    case 'mdone':
+      var pp = prog(view.topic), k = 'm'+el.dataset.i; pp.missions[k] = pp.missions[k] || {}; pp.missions[k].done = true; save();
+      toast('🎉 '+u('missionDone')); renderMissions(topicById(view.topic)); renderNav(); break;
+    case 'print': printTopic(); break;
+    case 'copy':
+      var ta = $('share-txt'), txt = ta.value;
+      var fallback = function(){ ta.select(); try { document.execCommand('copy'); } catch(e){} toast(u('copied')); };
+      if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(txt).then(function(){ toast(u('copied')); }, fallback); else fallback();
+      break;
+    case 'nshare': navigator.share({ text: $('share-txt').value }).catch(function(){}); break;
+    case 'dl':
+      var blob = new Blob([$('share-txt').value], { type:'text/plain' }), a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = (L ? L.name.replace(/\W+/g,'_') : 'progress') + '_' + COURSE.id + '_' + today() + '.txt';
+      document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 500); break;
+    case 'readcodes': readCodes(); break;
+  }
+}
+
+document.addEventListener('click', function(e){
+  var el = e.target.closest('[data-go],[data-act],[data-tab]'); if (!el || el.disabled) return;
+  if (el.dataset.go) go(el.dataset.go, el.dataset.topic);
+  else if (el.dataset.tab){ view.tab = el.dataset.tab; render(); }
+  else act(el.dataset.act, el);
+});
+$('menu-btn').addEventListener('click', function(){ document.body.classList.toggle('nav-open'); });
+$('scrim').addEventListener('click', function(){ document.body.classList.remove('nav-open'); });
+$('dark-btn').addEventListener('click', function(){ S.dark = !S.dark; save(); render(); });
+(function(){
+  var sel = $('lang-sel');
+  sel.innerHTML = COURSE.languages.map(function(l){ return '<option value="'+l.code+'">'+esc(l.name)+'</option>'; }).join('');
+  if (!COURSE.languages.some(function(l){ return l.code === S.lang; })) S.lang = COURSE.languages[0].code;
+  sel.value = S.lang;
+  sel.addEventListener('change', function(){ S.lang = sel.value; save(); render(); });
+})();
+
+go(me() ? 'home' : 'learners');
+</script>
+</body>
+</html>
